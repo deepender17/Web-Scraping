@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[9]:
+
+
+"""
+pip install bs4
+pip install requests
+pip install pandas
+pip install 
+
+"""
+import requests
+import bs4
+import pandas as pd
+import csv
+import numpy as np
+headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0", "Accept-Encoding":"gzip, deflate", "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,/;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}  
+#pageNo=1
+pageNo=input("Enter the page no.(maximum pages on site is 10)= ",)
+res = requests.get('https://yoshops.com/products?page='+str(pageNo), headers=headers)
+soup=bs4.BeautifulSoup(res.text,"lxml")
+productlist=soup.find_all('div',class_='product')
+product1=[]
+price1=[]
+link1=[]
+
+#Add the class what you want to extract like price , title
+for a in soup.select('.product-title'): 
+                product1.append(a.text)
+for a in soup.select('.product-price'):
+                price1.append(a.text)
+for item in productlist:
+    for link in item.find_all('a',href=True):
+        link1.append('https://yoshops.com/'+link['href'])                
+df1=pd.DataFrame({"Product Name": product1, "MRP-Selling_Price":price1,"Product_link":link1 })  
+#df1
+
+a1= np.array(df1)
+
+output=np.vstack(a1)
+data_df = pd.DataFrame(output)   #Key 1, Convert ndarray format to DataFrame
+
+
+data_df.columns = ['Product_name','MRP-Selling_Price','Product_Link']
+
+writer = pd.ExcelWriter('task.xlsx')  
+data_df.to_excel(writer,'page_1',float_format='%.5f')  
+writer.save() 
+print("DONE")
+
+
+# In[ ]:
+
+
+
+
